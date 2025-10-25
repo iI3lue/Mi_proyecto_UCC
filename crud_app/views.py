@@ -1,6 +1,92 @@
+from .forms import CheckoutForm
+# --- Checkout ---
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='login')
+def checkout(request):
+    carrito = request.session.get('carrito', {})
+    productos = []
+    total = 0
+    for pk, cantidad in carrito.items():
+        producto = Producto.objects.filter(pk=pk).first()
+        if producto:
+            subtotal = producto.precio * cantidad
+            productos.append({
+                'producto': producto,
+                'cantidad': cantidad,
+                'subtotal': subtotal
+            })
+            total += subtotal
+
+    if not productos:
+        messages.error(request, 'El carrito está vacío.')
+        return redirect('ver_carrito')
+
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            # Validar stock
+            for item in productos:
+                if item['cantidad'] > item['producto'].stock:
+                    messages.error(request, f"No hay suficiente stock para {item['producto'].nombre}.")
+                    return redirect('ver_carrito')
+            # Crear orden
+            order = Order.objects.create(
+                usuario=request.user,
+                total=total,
+                estado='pendiente'
+            )
+            for item in productos:
+                OrderItem.objects.create(
+                    order=order,
+                    producto=item['producto'],
+                    cantidad=item['cantidad'],
+                    precio_unitario=item['producto'].precio
+                )
+                # Descontar stock
+                item['producto'].stock -= item['cantidad']
+                item['producto'].save()
+            # Limpiar carrito
+            request.session['carrito'] = {}
+            messages.success(request, '¡Compra realizada con éxito!')
+            return redirect('orders')
+    else:
+        form = CheckoutForm()
+    return render(request, 'crud_app/checkout.html', {'productos': productos, 'total': total, 'form': form})
+# --- Historial de órdenes ---
+@login_required(login_url='login')
+def orders(request):
+    ordenes = Order.objects.filter(usuario=request.user).order_by('-creado_el')
+    return render(request, 'crud_app/orders.html', {'ordenes': ordenes})
+# --- Carrito ---
+from django.http import HttpResponseRedirect
+
+def agregar_al_carrito(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    carrito = request.session.get('carrito', {})
+    carrito[str(pk)] = carrito.get(str(pk), 0) + 1
+    request.session['carrito'] = carrito
+    messages.success(request, f"{producto.nombre} agregado al carrito.")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+def ver_carrito(request):
+    carrito = request.session.get('carrito', {})
+    productos = []
+    total = 0
+    for pk, cantidad in carrito.items():
+        producto = Producto.objects.filter(pk=pk).first()
+        if producto:
+            subtotal = producto.precio * cantidad
+            productos.append({
+                'producto': producto,
+                'cantidad': cantidad,
+                'subtotal': subtotal
+            })
+            total += subtotal
+    return render(request, 'crud_app/carrito.html', {'productos': productos, 'total': total})
 #crud_app/views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Producto
+from .models import Producto, Order, OrderItem
 from .forms import ProductoForm
 from django.contrib import messages #para mensajes de alerta
 from django.contrib.auth import authenticate, login, logout
@@ -15,7 +101,7 @@ def listar_productos(request):
 # Visitar para crear un nuevo producto
 def crear_producto(request):
     if request.method == 'POST':
-        form = ProductoForm(request.POST)
+        form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Producto creado exitosamente.')
@@ -99,4 +185,9 @@ def register_user(request):
         return redirect('login')
 
     return render(request, 'crud_app/register.html')
+
+# Vista de detalle de producto
+def producto_detalle(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    return render(request, 'crud_app/producto_detalle.html', {'producto': producto})
 

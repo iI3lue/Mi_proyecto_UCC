@@ -7,30 +7,41 @@
     <table class="table table-bordered ">
         <thead>
             <tr>
-                
+                <th>Imagen</th>
                 <th>Nombre</th>
-                <th>Descripción</th>
+                <th>Marca</th>
                 <th>Precio</th>
-                <th>Creado El</th>
+                <th>Stock</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for producto in productos %}
             <tr>
-              
-                <td>{{ producto.nombre }}</td>
-                <td>{{ producto.descripcion }}</td>
-                <td>{{ producto.precio }}</td> 
-                <td>{{ producto.creado_el|date:"d/m/Y H:i" }}</td>
+                <td>
+                  <a href="{% url 'producto_detalle' producto.pk %}">
+                    {% if producto.imagen %}
+                      <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" style="width:80px; height:auto;">
+                    {% else %}
+                      <img src="https://via.placeholder.com/80x60?text=Sin+Imagen" alt="Sin imagen">
+                    {% endif %}
+                  </a>
+                </td>
+                <td>
+                  <a href="{% url 'producto_detalle' producto.pk %}">{{ producto.nombre }}</a>
+                </td>
+                <td>{{ producto.marca }}</td>
+                <td>${{ producto.precio }}</td>
+                <td>{{ producto.stock }}</td>
                 <td>
                     <a href="{% url 'actualizar_producto' producto.pk %}" class="btn btn-warning btn-sm">Editar</a>
                     <a href="{% url 'eliminar_producto' producto.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                    <a href="{% url 'producto_detalle' producto.pk %}" class="btn btn-info btn-sm">Ver</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5">No hay productos disponibles.</td>
+                <td colspan="6">No hay productos disponibles.</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -21,8 +21,8 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Redirigir la raíz del sitio a la lista de productos
-    path('', RedirectView.as_view(url='/productos', permanent=False)),
+    # Redirigir la raíz del sitio a la página de login
+    path('', RedirectView.as_view(url='/login/', permanent=False)),
 
     path('', include('crud_app.urls')), # Incluir las URLs de la aplicación crud_app
 

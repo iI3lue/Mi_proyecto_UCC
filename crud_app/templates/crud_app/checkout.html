@@ -1,0 +1,34 @@
+{% extends 'crud_app/base.html' %}
+{% block contenido %}
+<div class="container mt-4">
+  <h2>Finalizar Compra</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <h4 class="mt-4">Resumen del carrito</h4>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in productos %}
+        <tr>
+          <td>{{ item.producto.nombre }}</td>
+          <td>{{ item.cantidad }}</td>
+          <td>${{ item.producto.precio }}</td>
+          <td>${{ item.subtotal }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h4>Total: ${{ total }}</h4>
+    <button type="submit" class="btn btn-success">Confirmar compra</button>
+    <a href="{% url 'ver_carrito' %}" class="btn btn-secondary ms-2">Volver al carrito</a>
+  </form>
+</div>
+{% endblock %}
