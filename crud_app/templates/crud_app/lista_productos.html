@@ -1,0 +1,38 @@
+<!-- crud_app/templates/crud_app/lista_producto.html -->
+{% extends 'crud_app/base.html' %}
+
+{% block contenido %}
+    <h2>Lista de Productos</h2>
+    <a href="{% url 'crear_producto' %}" class="btn btn-primary mb-3">Crear Nuevo Producto</a>
+    <table class="table table-bordered ">
+        <thead>
+            <tr>
+                
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Creado El</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+              
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.descripcion }}</td>
+                <td>{{ producto.precio }}</td> 
+                <td>{{ producto.creado_el|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'actualizar_producto' producto.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'eliminar_producto' producto.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No hay productos disponibles.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

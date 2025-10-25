@@ -1,0 +1,13 @@
+<!-- crud_app/templates/crud_app/actualizar_producto.html-->
+ {% extends 'crud_app/base.html' %}
+
+    {% block contenido %}
+    <h2>Actualizar Producto</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Actualizar</button>
+        <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+    {% endblock %}  
+    

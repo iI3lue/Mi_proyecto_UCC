@@ -1,0 +1,38 @@
+{% extends 'crud_app/base.html' %}
+{% block contenido %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <h2 class="text-center mb-4">Iniciar Sesión</h2>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Usuario</label>
+          <input type="text" class="form-control" name="username" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contraseña</label>
+          <div class="input-group">
+            <input type="password" class="form-control" name="password" id="loginPassword" required>
+            <button type="button" class="btn btn-outline-secondary" id="toggleLoginPass">👁️</button>
+          </div>
+        </div>
+        <div class="d-grid mb-3">
+          <button type="submit" class="btn btn-primary">Ingresar</button>
+        </div>
+        <p class="text-center">¿No tienes cuenta? <a href="{% url 'register' %}">Regístrate aquí</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  const loginPass = document.getElementById('loginPassword');
+  const toggleLoginPass = document.getElementById('toggleLoginPass');
+  toggleLoginPass.addEventListener('click', function () {
+    const type = loginPass.getAttribute('type') === 'password' ? 'text' : 'password';
+    loginPass.setAttribute('type', type);
+    this.textContent = type === 'password' ? '👁️' : '🙈';
+  });
+</script>
+{% endblock %}
+
