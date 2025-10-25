@@ -33,11 +33,12 @@
                 <td>{{ producto.marca }}</td>
                 <td>${{ producto.precio }}</td>
                 <td>{{ producto.stock }}</td>
-                <td>
-                    <a href="{% url 'actualizar_producto' producto.pk %}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{% url 'eliminar_producto' producto.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
-                    <a href="{% url 'producto_detalle' producto.pk %}" class="btn btn-info btn-sm">Ver</a>
-                </td>
+        <td>
+          <a href="{% url 'actualizar_producto' producto.pk %}" class="btn btn-warning btn-sm">Editar</a>
+          <a href="{% url 'eliminar_producto' producto.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+          <a href="{% url 'producto_detalle' producto.pk %}" class="btn btn-info btn-sm">Ver</a>
+          <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-success btn-sm ms-1">Añadir</a>
+        </td>
             </tr>
             {% empty %}
             <tr>

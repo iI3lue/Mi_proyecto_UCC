@@ -95,7 +95,8 @@ from django.contrib.auth.decorators import login_required
 
 # Visitar para listar todos los productos
 def listar_productos(request):
-    productos = Producto.objects.all()
+    # Mostrar solo productos con stock disponible
+    productos = Producto.objects.filter(stock__gt=0).order_by('-creado_el')
     return render(request, 'crud_app/lista_productos.html', {'productos': productos})
 
 # Visitar para crear un nuevo producto
@@ -190,4 +191,10 @@ def register_user(request):
 def producto_detalle(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     return render(request, 'crud_app/producto_detalle.html', {'producto': producto})
+
+
+def index(request):
+    # Mostrar algunos productos destacados y caja de búsqueda básica
+    productos = Producto.objects.filter(stock__gt=0).order_by('-creado_el')[:12]
+    return render(request, 'crud_app/index.html', {'productos': productos})
 
