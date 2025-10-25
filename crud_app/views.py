@@ -1,5 +1,5 @@
 #crud_app/views.py
-from django.shortcuts import render, redirect, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Producto
 from .forms import ProductoForm
 from django.contrib import messages #para mensajes de alerta
@@ -20,8 +20,10 @@ def crear_producto(request):
             form.save()
             messages.success(request, 'Producto creado exitosamente.')
             return redirect('lista_productos')
+        else:
+            # Mostrar errores de validación al usuario, sin redirigir
+            messages.error(request, 'Error al crear el producto. Por favor, revisar los datos.')
     else:
-        messages.error(request, 'Error al crear el producto. Por favor, revisar los datos.')
         form = ProductoForm()
     return render(request, 'crud_app/crear_producto.html', {'form': form})
 
@@ -34,8 +36,10 @@ def actualizar_producto(request, pk):
             form.save()
             messages.success(request, 'Producto actualizado exitosamente.')
             return redirect('lista_productos')
+        else:
+            # Mostrar errores de validación al usuario, sin redirigir
+            messages.error(request, 'Error al actualizar el producto. Por favor, revisar los datos.')
     else:
-        messages.error(request, 'Error al actualizar el producto. Por favor, revisar los datos.')
         form = ProductoForm(instance=producto)
     return render(request, 'crud_app/actualizar_producto.html', {'form': form})
 
