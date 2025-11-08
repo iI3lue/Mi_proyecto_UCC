@@ -38,10 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 spans[0].style.transform = 'rotate(45deg) translateY(8px)';
                 spans[1].style.opacity = '0';
                 spans[2].style.transform = 'rotate(-45deg) translateY(-8px)';
+                // Prevenir scroll del body cuando el menú está abierto
+                document.body.style.overflow = 'hidden';
             } else {
                 spans[0].style.transform = 'rotate(0) translateY(0)';
                 spans[1].style.opacity = '1';
                 spans[2].style.transform = 'rotate(0) translateY(0)';
+                // Restaurar scroll del body
+                document.body.style.overflow = '';
             }
         });
         
@@ -54,7 +58,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 spans[0].style.transform = 'rotate(0) translateY(0)';
                 spans[1].style.opacity = '1';
                 spans[2].style.transform = 'rotate(0) translateY(0)';
+                document.body.style.overflow = '';
             });
+        });
+        
+        // Cerrar menú al hacer clic fuera de él
+        document.addEventListener('click', function(event) {
+            if (navbarMenu.classList.contains('active') && 
+                !navbarMenu.contains(event.target) && 
+                !hamburger.contains(event.target)) {
+                navbarMenu.classList.remove('active');
+                const spans = hamburger.querySelectorAll('span');
+                spans[0].style.transform = 'rotate(0) translateY(0)';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'rotate(0) translateY(0)';
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Cerrar menú al cambiar tamaño de pantalla (responsive)
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (window.innerWidth > 768 && navbarMenu.classList.contains('active')) {
+                    navbarMenu.classList.remove('active');
+                    const spans = hamburger.querySelectorAll('span');
+                    spans[0].style.transform = 'rotate(0) translateY(0)';
+                    spans[1].style.opacity = '1';
+                    spans[2].style.transform = 'rotate(0) translateY(0)';
+                    document.body.style.overflow = '';
+                }
+            }, 100);
         });
     }
 });

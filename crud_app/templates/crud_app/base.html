@@ -8,7 +8,8 @@
   <meta name="description" content="Tu tienda de tecnología favorita">
   
   <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.0">
+  <link rel="stylesheet" href="{% static 'css/responsive-overrides.css' %}">
   
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
@@ -35,13 +36,9 @@
         <li><a class="navbar-link" href="{% url 'index' %}">Inicio</a></li>
         <li><a class="navbar-link" href="{% url 'categorias_lista' %}">Categorías</a></li>
         <li><a class="navbar-link" href="{% url 'lista_productos' %}">Productos</a></li>
-        <li><a class="navbar-link" href="{% url 'buscar_productos' %}">Buscar</a></li>
         
         {% if user.is_authenticated %}
           <li><a class="navbar-link" href="{% url 'orders' %}">📦 Mis Órdenes</a></li>
-          {% if user.is_staff %}
-            <li><a class="navbar-link" href="{% url 'crear_producto' %}">➕ Agregar Producto</a></li>
-          {% endif %}
           <li><a class="navbar-link" href="{% url 'logout' %}">Cerrar Sesión</a></li>
         {% else %}
           <li><a class="navbar-link" href="{% url 'login' %}">Iniciar Sesión</a></li>
@@ -55,6 +52,15 @@
             <span class="cart-badge" id="cart-badge">0</span>
           </a>
         </li>
+        
+        {% if user.is_staff %}
+        <li>
+          <a class="admin-button" href="/admin/" target="_blank" title="Panel de Administración">
+            <span>⚙️</span>
+            <span>Admin</span>
+          </a>
+        </li>
+        {% endif %}
         
         <li>
           <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">

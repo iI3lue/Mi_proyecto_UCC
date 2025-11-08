@@ -1,0 +1,285 @@
+/* ============================================
+   OVERRIDES RESPONSIVE PARA ESTILOS INLINE
+   Este archivo maneja elementos con estilos inline
+   que necesitan ser responsivos
+   ============================================ */
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+@media (max-width: 768px) {
+    /* Hero section */
+    section[style*="background: linear-gradient"] {
+        padding: 3rem 1.5rem !important;
+    }
+    
+    section h1[style*="font-size: 3rem"] {
+        font-size: 2.5rem !important;
+    }
+    
+    section p[style*="font-size: 1.3rem"] {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    section[style*="background: linear-gradient"] {
+        padding: 2.5rem 1rem !important;
+    }
+    
+    section h1[style*="font-size: 3rem"] {
+        font-size: 2rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    section p[style*="font-size: 1.3rem"] {
+        font-size: 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+}
+
+/* ============================================
+   SEARCH SECTION
+   ============================================ */
+@media (max-width: 768px) {
+    .search-section[style*="margin-top: -30px"] {
+        margin-top: -20px !important;
+    }
+    
+    .search-container[style*="background-color"] {
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-section[style*="margin-top: -30px"] {
+        margin-top: -15px !important;
+    }
+    
+    .search-container[style*="background-color"] {
+        padding: 0.75rem !important;
+    }
+}
+
+/* ============================================
+   GRIDS CON INLINE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+    /* Grid de categorías */
+    div[style*="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))"] {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+    
+    /* Grid de características */
+    div[style*="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr))"] {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
+    
+    /* Tarjetas de categoría */
+    a[style*="padding: 2rem 1rem"] {
+        padding: 1.5rem 0.75rem !important;
+    }
+    
+    a div[style*="font-size: 3rem"] {
+        font-size: 2.5rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    div[style*="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+    
+    div[style*="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr))"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Grid de categorías a 1 columna en móviles pequeños */
+    div[style*="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    a[style*="padding: 2rem 1rem"] {
+        padding: 1.25rem 0.75rem !important;
+    }
+    
+    a div[style*="font-size: 3rem"] {
+        font-size: 2rem !important;
+    }
+    
+    a h3[style*="font-size: 1.125rem"] {
+        font-size: 1rem !important;
+    }
+}
+
+/* ============================================
+   TÍTULOS Y HEADERS RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    h2[style*="font-size: 2.5rem"] {
+        font-size: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    h2[style*="font-size: 2rem"] {
+        font-size: 1.75rem !important;
+    }
+    
+    div[style*="justify-content: space-between"] h2 {
+        font-size: 1.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    h2[style*="font-size: 2.5rem"] {
+        font-size: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    h2[style*="font-size: 2rem"] {
+        font-size: 1.35rem !important;
+    }
+    
+    div[style*="justify-content: space-between"] {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+}
+
+/* ============================================
+   SECCIONES DE CARACTERÍSTICAS
+   ============================================ */
+@media (max-width: 768px) {
+    section[style*="background-color: var(--secondary-bg)"] {
+        padding: 3rem 1.5rem !important;
+        margin-top: 3rem !important;
+    }
+    
+    div[style*="text-align: center; padding: 2rem"] {
+        padding: 1.5rem !important;
+    }
+    
+    div[style*="font-size: 1.3rem"] {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    section[style*="background-color: var(--secondary-bg)"] {
+        padding: 2rem 1rem !important;
+        margin-top: 2rem !important;
+    }
+    
+    div[style*="text-align: center; padding: 2rem"] {
+        padding: 1rem !important;
+    }
+    
+    div[style*="font-size: 1.3rem"] {
+        font-size: 1rem !important;
+    }
+}
+
+/* ============================================
+   BOTONES Y LINKS RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .btn[style*="padding: 1rem 3rem"] {
+        padding: 0.875rem 2rem !important;
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn[style*="padding: 1rem 3rem"] {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.95rem !important;
+    }
+}
+
+/* ============================================
+   CONTENEDORES Y MARGINS
+   ============================================ */
+@media (max-width: 768px) {
+    .container[style*="margin-top: 3rem"] {
+        margin-top: 2rem !important;
+    }
+    
+    div[style*="margin-bottom: 3rem"] {
+        margin-bottom: 2rem !important;
+    }
+    
+    div[style*="margin-bottom: 2rem"] {
+        margin-bottom: 1.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .container[style*="margin-top: 3rem"] {
+        margin-top: 1.5rem !important;
+    }
+    
+    div[style*="margin-bottom: 3rem"] {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    div[style*="margin-bottom: 2rem"] {
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* ============================================
+   FLEXBOX RESPONSIVE
+   ============================================ */
+@media (max-width: 576px) {
+    div[style*="display: flex; gap: 0.5rem"] {
+        width: 100% !important;
+    }
+    
+    div[style*="display: flex; gap: 0.5rem"] .btn {
+        flex: 1 !important;
+    }
+}
+
+/* ============================================
+   TEXTO Y TIPOGRAFÍA
+   ============================================ */
+@media (max-width: 480px) {
+    p[style*="color: var(--text-secondary)"] {
+        font-size: 0.9rem !important;
+    }
+    
+    span[style*="font-size: 0.875rem"] {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* ============================================
+   MEJORAS DE USABILIDAD TÁCTIL
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+    /* Aumentar áreas de toque en móviles */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .navbar-link {
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Mejorar hover en dispositivos táctiles */
+    .product-card:hover {
+        transform: none;
+    }
+    
+    .product-card:active {
+        transform: scale(0.98);
+    }
+}
