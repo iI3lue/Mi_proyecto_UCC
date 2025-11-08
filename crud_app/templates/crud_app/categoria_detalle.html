@@ -1,0 +1,315 @@
+{% extends 'crud_app/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ categoria.nombre }} - Ecommerce{% endblock %}
+
+{% block contenido %}
+<div class="container">
+    <!-- Header de Categoría -->
+    <div class="category-header">
+        <div class="category-breadcrumb">
+            <a href="{% url 'index' %}">Inicio</a>
+            <span>/</span>
+            <a href="{% url 'categorias_lista' %}">Categorías</a>
+            <span>/</span>
+            <span>{{ categoria.nombre }}</span>
+        </div>
+        
+        <div class="category-title">
+            <div class="category-icon-large">{{ categoria.icono }}</div>
+            <div>
+                <h1>{{ categoria.nombre }}</h1>
+                <p>{{ categoria.descripcion }}</p>
+                <div class="category-meta">
+                    {{ productos.count }} producto{{ productos.count|pluralize }} disponible{{ productos.count|pluralize }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <form method="get" class="filters-form" id="filters-form">
+            <div class="filter-group">
+                <label for="marca-filter">
+                    <i class="filter-icon">🏷️</i>
+                    Marca
+                </label>
+                <select name="marca" id="marca-filter" class="filter-select">
+                    <option value="">Todas las marcas</option>
+                    {% for marca in marcas %}
+                        <option value="{{ marca }}" {% if marca == selected_marca %}selected{% endif %}>
+                            {{ marca }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="price-filter">
+                    <i class="filter-icon">💰</i>
+                    Precio
+                </label>
+                <select name="price" id="price-filter" class="filter-select">
+                    <option value="">Por defecto</option>
+                    <option value="asc" {% if selected_price == 'asc' %}selected{% endif %}>
+                        Menor a mayor
+                    </option>
+                    <option value="desc" {% if selected_price == 'desc' %}selected{% endif %}>
+                        Mayor a menor
+                    </option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+        </form>
+    </div>
+
+    <!-- Productos -->
+    {% if productos %}
+        <div class="products-grid">
+            {% for producto in productos %}
+            <div class="product-card" data-id="{{ producto.id }}">
+                {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
+                {% else %}
+                    <div class="product-image-placeholder">
+                        📦
+                    </div>
+                {% endif %}
+                
+                <div class="product-badge">
+                    <span class="badge badge-primary">{{ producto.marca }}</span>
+                </div>
+                
+                {% if producto.stock < 10 %}
+                    <div class="product-badge" style="top: 10px; right: 10px; left: auto;">
+                        <span class="badge badge-warning">¡Últimas {{ producto.stock }} unidades!</span>
+                    </div>
+                {% endif %}
+                
+                <div class="product-content">
+                    <h3 class="product-title">
+                        <a href="{% url 'producto_detalle' producto.id %}">{{ producto.nombre }}</a>
+                    </h3>
+                    
+                    <p class="product-description">{{ producto.descripcion|truncatewords:20 }}</p>
+                    
+                    <div class="product-footer">
+                        <div class="product-price">{{ producto.precio|currency_cop }}</div>
+                        <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                                data-product-id="{{ producto.id }}"
+                                onclick="addToCart({{ producto.id }})">
+                            <span class="btn-icon">🛒</span>
+                            Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h2>No hay productos en esta categoría</h2>
+            <p>{% if selected_marca %}No se encontraron productos de la marca "{{ selected_marca }}" en esta categoría.{% else %}Esta categoría no tiene productos disponibles en este momento.{% endif %}</p>
+            <a href="{% url 'categorias_lista' %}" class="btn btn-primary">Ver todas las categorías</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.category-header {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.category-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+}
+
+.category-breadcrumb a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.category-breadcrumb a:hover {
+    color: var(--primary-color);
+}
+
+.category-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.category-icon-large {
+    font-size: 5rem;
+    line-height: 1;
+}
+
+.category-title h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-title p {
+    font-size: 1.125rem;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.category-meta {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.filters-section {
+    background: var(--card-background);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.filters-form {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
+}
+
+.filter-icon {
+    font-size: 1.25rem;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-primary);
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-alpha);
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    font-size: 1.125rem;
+    opacity: 0.6;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .category-title {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .category-icon-large {
+        font-size: 4rem;
+    }
+    
+    .category-title h1 {
+        font-size: 2rem;
+    }
+    
+    .filters-form {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filters-form .btn {
+        width: 100%;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .category-icon-large {
+        font-size: 3rem;
+    }
+}
+</style>
+
+<script>
+// Auto-submit del formulario cuando cambian los filtros
+document.getElementById('marca-filter').addEventListener('change', function() {
+    document.getElementById('filters-form').submit();
+});
+
+document.getElementById('price-filter').addEventListener('change', function() {
+    document.getElementById('filters-form').submit();
+});
+</script>
+{% endblock %}

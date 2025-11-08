@@ -1,0 +1,6 @@
+# Dependencias esenciales para el proyecto Django Ecommerce
+Django==5.2.7
+Pillow==11.3.0
+sqlparse==0.5.3
+asgiref==3.10.0
+tzdata==2025.2

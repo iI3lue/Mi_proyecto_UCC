@@ -1,48 +1,181 @@
 {% extends 'crud_app/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}TechStore - Inicio{% endblock %}
+
 {% block contenido %}
-<div class="container mt-4">
-  <div class="row mb-3">
-    <div class="col-md-8">
-      <h1 class="mb-0">Tienda de Computadores</h1>
-      <p class="text-muted">Encuentra tu próximo equipo.</p>
-    </div>
-    <div class="col-md-4">
-      <form method="GET" action="{# no implementado: search placeholder #}">
-        <div class="input-group mt-2">
-          <input type="text" name="q" class="form-control" placeholder="Buscar por modelo, marca o especificaciones...">
-          <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-        </div>
-      </form>
-    </div>
+<!-- Hero Section -->
+<section style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-hover) 100%); padding: 4rem 2rem; text-align: center; color: white;">
+  <div class="container">
+    <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+      💻 Bienvenido a TechStore
+    </h1>
+    <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.95;">
+      Los mejores equipos de tecnología al mejor precio
+    </p>
+    <a href="{% url 'lista_productos' %}" class="btn btn-lg" style="background-color: white; color: var(--accent-blue); font-weight: 700; padding: 1rem 3rem;">
+      Ver Catálogo Completo →
+    </a>
   </div>
+</section>
 
-  <div class="row">
-    <div class="col-12 mb-3">
-      <a href="{% url 'lista_productos' %}" class="btn btn-primary">Lista de productos</a>
-    </div>
+<!-- Búsqueda Rápida -->
+<div class="search-section" style="margin-top: -30px; position: relative; z-index: 10;">
+  <div class="search-container" style="background-color: var(--card-bg); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+    <span class="search-icon">🔍</span>
+    <input 
+      type="text" 
+      class="search-input" 
+      id="quick-search" 
+      placeholder="Buscar computadores, laptops, accesorios..."
+      style="border: 2px solid var(--border-color);"
+    >
+    <a href="{% url 'buscar_productos' %}" class="btn btn-primary">
+      Búsqueda Avanzada
+    </a>
   </div>
+</div>
 
-  <div class="row">
+<!-- Categorías Destacadas -->
+<div class="container" style="margin-top: 3rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2 class="page-title" style="font-size: 2rem; margin: 0;">
+      📦 Explora por Categorías
+    </h2>
+    <a href="{% url 'categorias_lista' %}" class="btn btn-outline">Ver todas →</a>
+  </div>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    {% for categoria in categorias %}
+    <a href="{% url 'categoria_detalle' categoria.slug %}" 
+       style="display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: var(--radius-md); text-decoration: none; color: inherit; transition: all 0.3s ease;"
+       onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--accent-blue)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';"
+       onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">{{ categoria.icono }}</div>
+      <h3 style="font-size: 1.125rem; font-weight: 600; text-align: center; margin-bottom: 0.5rem;">{{ categoria.nombre }}</h3>
+      <span style="font-size: 0.875rem; color: var(--accent-blue); font-weight: 500;">{{ categoria.productos_count }} productos</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Productos Destacados -->
+<div class="container" style="margin-top: 3rem;">
+  <h2 class="page-title" style="font-size: 2.5rem; margin-bottom: 3rem;">
+    ⭐ Productos Destacados
+  </h2>
+  
+  {% if productos %}
+  <div class="products-grid">
     {% for producto in productos %}
-    <div class="col-md-3 mb-4">
-      <div class="card h-100">
+    <div class="product-card">
+      <div class="product-image-container">
         {% if producto.imagen %}
-        <img src="{{ producto.imagen.url }}" class="card-img-top" style="height:160px; object-fit:cover;" alt="{{ producto.nombre }}">
+          <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
         {% else %}
-        <img src="https://via.placeholder.com/300x160?text=Sin+Imagen" class="card-img-top" style="height:160px; object-fit:cover;" alt="Sin imagen">
+          <img src="https://via.placeholder.com/280x250?text=Sin+Imagen" alt="Sin imagen" class="product-image">
         {% endif %}
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title">{{ producto.nombre }}</h5>
-          <p class="card-text text-muted small">{{ producto.marca }} • {{ producto.categoria }}</p>
-          <p class="card-text fw-bold mt-auto">${{ producto.precio }}</p>
-          <div class="mt-2">
-            <a href="{% url 'producto_detalle' producto.pk %}" class="btn btn-outline-primary btn-sm">Ver</a>
-            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-success btn-sm ms-1">Añadir</a>
+        
+        <div class="product-badge">{{ producto.marca }}</div>
+        
+        {% if producto.stock > 0 %}
+          {% if producto.stock < 5 %}
+            <div class="stock-badge low-stock">Solo {{ producto.stock }} disponibles</div>
+          {% else %}
+            <div class="stock-badge">En Stock</div>
+          {% endif %}
+        {% else %}
+          <div class="stock-badge out-of-stock">Agotado</div>
+        {% endif %}
+      </div>
+      
+      <div class="product-content">
+        <div class="product-category">{{ producto.categoria }}</div>
+        <h3 class="product-title">{{ producto.nombre }}</h3>
+        <div class="product-brand">{{ producto.marca }}</div>
+        <p class="product-description">{{ producto.descripcion|truncatewords:15 }}</p>
+        
+        <div class="product-footer">
+          <div class="product-price">
+            {{ producto.precio|currency_cop }}
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="{% url 'producto_detalle' producto.pk %}" class="btn btn-outline btn-sm">
+              👁️ Ver
+            </a>
+            {% if producto.stock > 0 %}
+              <button onclick="addToCart({{ producto.pk }}, this)" class="btn btn-primary btn-sm">
+                🛒 Agregar
+              </button>
+            {% else %}
+              <button class="btn btn-sm" disabled style="background-color: var(--border-color); cursor: not-allowed;">
+                Agotado
+              </button>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
+  
+  <!-- Botón para ver más -->
+  <div class="text-center" style="margin-top: 3rem;">
+    <a href="{% url 'lista_productos' %}" class="btn btn-primary btn-lg">
+      Ver Todos los Productos →
+    </a>
+  </div>
+  
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📦</div>
+    <div class="empty-state-text">No hay productos disponibles en este momento</div>
+  </div>
+  {% endif %}
 </div>
+
+<!-- Sección de características -->
+<section style="background-color: var(--secondary-bg); padding: 4rem 2rem; margin-top: 4rem;">
+  <div class="container">
+    <h2 class="page-title" style="margin-bottom: 3rem;">¿Por qué comprar con nosotros?</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🚚</div>
+        <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">Envío Rápido</h3>
+        <p style="color: var(--text-secondary);">Recibe tus productos en tiempo récord</p>
+      </div>
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+        <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">Pago Seguro</h3>
+        <p style="color: var(--text-secondary);">Transacciones 100% protegidas</p>
+      </div>
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
+        <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">Calidad Garantizada</h3>
+        <p style="color: var(--text-secondary);">Productos originales y de calidad</p>
+      </div>
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
+        <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">Soporte 24/7</h3>
+        <p style="color: var(--text-secondary);">Estamos aquí para ayudarte</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Búsqueda rápida al presionar Enter
+  document.getElementById('quick-search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      const query = this.value.trim();
+      if (query) {
+        window.location.href = `/buscar/?q=${encodeURIComponent(query)}`;
+      }
+    }
+  });
+</script>
 {% endblock %}

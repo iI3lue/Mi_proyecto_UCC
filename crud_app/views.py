@@ -1,6 +1,15 @@
 from .forms import CheckoutForm
-# --- Checkout ---
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Producto, Order, OrderItem, Categoria
+from .forms import ProductoForm
+from django.contrib import messages #para mensajes de alerta
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.db.models import Q
 
 @login_required(login_url='login')
 def checkout(request):
@@ -66,6 +75,15 @@ def agregar_al_carrito(request, pk):
     carrito = request.session.get('carrito', {})
     carrito[str(pk)] = carrito.get(str(pk), 0) + 1
     request.session['carrito'] = carrito
+    
+    # Soporte para AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.method == 'POST':
+        return JsonResponse({
+            'success': True,
+            'message': f"{producto.nombre} agregado al carrito.",
+            'count': sum(carrito.values())
+        })
+    
     messages.success(request, f"{producto.nombre} agregado al carrito.")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -85,13 +103,7 @@ def ver_carrito(request):
             total += subtotal
     return render(request, 'crud_app/carrito.html', {'productos': productos, 'total': total})
 #crud_app/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Producto, Order, OrderItem
-from .forms import ProductoForm
-from django.contrib import messages #para mensajes de alerta
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
+
 
 # Visitar para listar todos los productos
 def listar_productos(request):
@@ -118,7 +130,7 @@ def crear_producto(request):
 def actualizar_producto(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
-        form = ProductoForm(request.POST, instance=producto)
+        form = ProductoForm(request.POST, request.FILES, instance=producto)
         if form.is_valid():
             form.save()
             messages.success(request, 'Producto actualizado exitosamente.')
@@ -196,5 +208,191 @@ def producto_detalle(request, pk):
 def index(request):
     # Mostrar algunos productos destacados y caja de búsqueda básica
     productos = Producto.objects.filter(stock__gt=0).order_by('-creado_el')[:12]
-    return render(request, 'crud_app/index.html', {'productos': productos})
+    
+    # Obtener categorías activas con conteo de productos
+    categorias = Categoria.objects.filter(activa=True).order_by('orden', 'nombre')[:7]
+    for categoria in categorias:
+        categoria.productos_count = categoria.productos.filter(stock__gt=0).count()
+    
+    return render(request, 'crud_app/index.html', {
+        'productos': productos,
+        'categorias': categorias
+    })
 
+# ============================================
+# API ENDPOINTS PARA AJAX
+# ============================================
+
+def cart_count(request):
+    """Retorna el número de items en el carrito"""
+    carrito = request.session.get('carrito', {})
+    count = sum(carrito.values())
+    return JsonResponse({'count': count})
+
+@require_POST
+def cart_update(request):
+    """Actualiza la cantidad de un producto en el carrito"""
+    import json
+    data = json.loads(request.body)
+    product_id = str(data.get('product_id'))
+    quantity = int(data.get('quantity', 1))
+    
+    carrito = request.session.get('carrito', {})
+    
+    if quantity > 0:
+        carrito[product_id] = quantity
+    else:
+        carrito.pop(product_id, None)
+    
+    request.session['carrito'] = carrito
+    
+    # Calcular totales
+    total = 0
+    subtotal = 0
+    producto = Producto.objects.filter(pk=product_id).first()
+    if producto:
+        subtotal = float(producto.precio) * quantity
+    
+    for pk, cant in carrito.items():
+        prod = Producto.objects.filter(pk=pk).first()
+        if prod:
+            total += float(prod.precio) * cant
+    
+    return JsonResponse({
+        'success': True,
+        'quantity': quantity,
+        'subtotal': subtotal,
+        'total': total
+    })
+
+@require_POST
+def cart_remove(request):
+    """Elimina un producto del carrito"""
+    import json
+    data = json.loads(request.body)
+    product_id = str(data.get('product_id'))
+    
+    carrito = request.session.get('carrito', {})
+    carrito.pop(product_id, None)
+    request.session['carrito'] = carrito
+    
+    # Calcular total
+    total = 0
+    for pk, cant in carrito.items():
+        prod = Producto.objects.filter(pk=pk).first()
+        if prod:
+            total += float(prod.precio) * cant
+    
+    return JsonResponse({
+        'success': True,
+        'total': total
+    })
+
+# ============================================
+# BÚSQUEDA Y FILTROS
+# ============================================
+
+def buscar_productos(request):
+    """Vista de búsqueda con filtros"""
+    query = request.GET.get('q', '')
+    categoria_slug = request.GET.get('category', '')
+    precio_orden = request.GET.get('price', '')
+    marca = request.GET.get('marca', '')
+    
+    # Empezar con todos los productos con stock
+    productos = Producto.objects.filter(stock__gt=0)
+    
+    # Aplicar búsqueda por texto
+    if query:
+        productos = productos.filter(
+            Q(nombre__icontains=query) |
+            Q(descripcion__icontains=query) |
+            Q(marca__icontains=query) |
+            Q(categoria_texto__icontains=query) |
+            Q(categoria_fk__nombre__icontains=query) |
+            Q(especificaciones__icontains=query)
+        )
+    
+    # Filtrar por categoría (usando slug o nombre)
+    if categoria_slug:
+        productos = productos.filter(
+            Q(categoria_fk__slug=categoria_slug) | Q(categoria_texto=categoria_slug)
+        )
+    
+    # Filtrar por marca
+    if marca:
+        productos = productos.filter(marca=marca)
+    
+    # Ordenar por precio
+    if precio_orden == 'asc':
+        productos = productos.order_by('precio')
+    elif precio_orden == 'desc':
+        productos = productos.order_by('-precio')
+    else:
+        productos = productos.order_by('-creado_el')
+    
+    # Obtener categorías y marcas únicas para los filtros
+    categorias = Categoria.objects.filter(activa=True).order_by('orden', 'nombre')
+    marcas = Producto.objects.values_list('marca', flat=True).distinct().order_by('marca')
+    
+    context = {
+        'productos': productos,
+        'categorias': categorias,
+        'marcas': marcas,
+        'query': query,
+        'selected_category': categoria_slug,
+        'selected_marca': marca,
+        'selected_price': precio_orden,
+    }
+    
+    return render(request, 'crud_app/buscar.html', context)
+
+
+def categorias_lista(request):
+    """Vista que muestra todas las categorías disponibles"""
+    categorias = Categoria.objects.filter(activa=True).order_by('orden', 'nombre')
+    
+    # Contar productos con stock para cada categoría
+    for categoria in categorias:
+        categoria.productos_count = categoria.productos.filter(stock__gt=0).count()
+    
+    context = {
+        'categorias': categorias,
+    }
+    
+    return render(request, 'crud_app/categorias.html', context)
+
+
+def categoria_detalle(request, slug):
+    """Vista que muestra todos los productos de una categoría específica"""
+    categoria = get_object_or_404(Categoria, slug=slug, activa=True)
+    
+    # Obtener productos con stock de esta categoría
+    productos = categoria.productos.filter(stock__gt=0)
+    
+    # Filtro de precio opcional
+    precio_orden = request.GET.get('price', '')
+    if precio_orden == 'asc':
+        productos = productos.order_by('precio')
+    elif precio_orden == 'desc':
+        productos = productos.order_by('-precio')
+    else:
+        productos = productos.order_by('-creado_el')
+    
+    # Obtener marcas disponibles en esta categoría
+    marcas = productos.values_list('marca', flat=True).distinct().order_by('marca')
+    
+    # Filtro de marca opcional
+    marca = request.GET.get('marca', '')
+    if marca:
+        productos = productos.filter(marca=marca)
+    
+    context = {
+        'categoria': categoria,
+        'productos': productos,
+        'marcas': marcas,
+        'selected_marca': marca,
+        'selected_price': precio_orden,
+    }
+    
+    return render(request, 'crud_app/categoria_detalle.html', context)
